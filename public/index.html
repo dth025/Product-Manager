@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Product Manager</title>
+  <style>
+    :root {
+      color-scheme: dark light;
+      --bg: #eef2f7;
+      --card: #ffffff;
+      --card-alt: #f8fafc;
+      --text: #111827;
+      --muted: #6b7280;
+      --accent: #4f46e5;
+      --accent-hover: #4338ca;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --border: rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.12), transparent 30%),
+                  linear-gradient(180deg, #eef2f7 0%, #f8fafc 100%);
+      margin: 0;
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 26px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      backdrop-filter: blur(16px);
+    }
+
+    header h1 {
+      font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+      margin: 0;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.6;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.05);
+      padding: 24px;
+    }
+
+    .product-form {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+
+    .product-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .product-field label {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .product-form input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid #d1d5db;
+      background: #f8fafc;
+      color: var(--text);
+      font-size: 0.95rem;
+      transition: border 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .product-form input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+      background: #ffffff;
+    }
+
+    .product-form .actions {
+      display: flex;
+      gap: 12px;
+      grid-column: 1 / -1;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .product-form button {
+      padding: 14px 20px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    }
+
+    .product-form button.primary {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 12px 24px rgba(79, 70, 229, 0.18);
+    }
+
+    .product-form button.primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .product-form button.secondary {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid #d1d5db;
+    }
+
+    .product-form button.secondary:hover {
+      background: #f3f4f6;
+    }
+
+    #status {
+      text-align: center;
+      margin: 0;
+      font-weight: 700;
+      color: var(--success);
+      min-height: 1.4rem;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table.product-list {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: transparent;
+      font-size: 0.95rem;
+    }
+
+    table.product-list th,
+    table.product-list td {
+      padding: 16px 18px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+
+    table.product-list th {
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    table.product-list tbody tr:nth-child(even) {
+      background: #ffffff;
+    }
+
+    table.product-list tbody tr:nth-child(odd) {
+      background: #f9fafb;
+    }
+
+    table.product-list img {
+      width: 68px;
+      height: 68px;
+      object-fit: cover;
+      border-radius: 18px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .product-actions button {
+      min-width: 96px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: none;
+      color: white;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .product-actions button:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+
+    .product-actions button.edit {
+      background: #0d9488;
+    }
+
+    .product-actions button.delete {
+      background: var(--danger);
+    }
+
+    @media (max-width: 880px) {
+      .product-form {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .product-form {
+        grid-template-columns: 1fr;
+      }
+
+      table.product-list {
+        min-width: 100%;
+      }
+
+      header {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div>
+      <h1>Product Manager</h1>
+      <p>Quản lý sản phẩm trực tiếp từ trình duyệt, thêm, sửa, xoá và xem danh sách sản phẩm cùng ảnh minh hoạ.</p>
+    </div>
+    <div>
+      <strong style="color: var(--accent);">Node.js · Express · MongoDB · Redis</strong>
+    </div>
+  </header>
+
+<div class="card">
+  <form class="product-form" id="product-form">
+    <div class="product-field">
+      <label for="name">Tên sản phẩm</label>
+      <input type="text" id="name" placeholder="Product name" required />
+    </div>
+    <div class="product-field">
+      <label for="sku">SKU</label>
+      <input type="text" id="sku" placeholder="SKU (unique)" required />
+    </div>
+    <div class="product-field">
+      <label for="entryDate">Ngày nhập</label>
+      <input type="date" id="entryDate" required />
+    </div>
+    <div class="product-field">
+      <label for="costPrice">Giá vốn</label>
+      <input type="number" id="costPrice" placeholder="Cost Price" required />
+    </div>
+    <div class="product-field">
+      <label for="price">Giá bán</label>
+      <input type="number" id="price" placeholder="Selling Price" required />
+    </div>
+    <div class="product-field">
+      <label for="quantity">Số lượng</label>
+      <input type="number" id="quantity" placeholder="Quantity" min="1" required />
+    </div>
+    <div class="product-field">
+      <label for="imageUrl">Ảnh sản phẩm</label>
+      <input type="text" id="imageUrl" placeholder="Image URL" />
+    </div>
+    <div class="actions">
+      <button type="submit" id="submit-btn" class="primary">Add Product</button>
+      <button type="button" id="cancel-btn" class="secondary" style="display:none;" onclick="cancelEdit()">Cancel</button>
+    </div>
+  </form>
+
+  <div id="status"></div>
+</div>
+
+<div class="card table-wrapper">
+  <table id="product-table" class="product-list">
+  <thead>
+    <tr>
+      <th>Image</th>
+      <th>Name</th>
+      <th>SKU</th>
+      <th>Entry Date</th>
+      <th>Cost Price</th>
+      <th>Selling Price</th>
+      <th>Quantity</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="product-list">
+    <tr><td colspan="8">Loading...</td></tr>
+  </tbody>
+</table>
+</div>
+
+<script>
+let editingProductId = null;
+
+document.getElementById('product-form').addEventListener('submit', submitProductForm);
+
+async function loadProducts() {
+  const list = document.getElementById('product-list');
+  list.innerHTML = '<tr><td colspan="8">Loading...</td></tr>';
+
+  try {
+    const res = await fetch('/api/products');
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<tr><td colspan="8">No products found.</td></tr>';
+      return;
+    }
+
+    list.innerHTML = '';
+    data.forEach(p => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><img src="${p.imageUrl || ''}" alt="Product" /></td>
+        <td>${p.name}</td>
+        <td>${p.sku || ''}</td>
+        <td>${new Date(p.entryDate).toLocaleDateString()}</td>
+        <td>${p.costPrice?.toLocaleString()}₫</td>
+        <td>${p.price?.toLocaleString()}₫</td>
+        <td>${p.quantity ?? 0}</td>
+        <td class="product-actions">
+          <button onclick="startEditProduct('${p._id}')">Edit</button>
+          <button class="delete" onclick="deleteProduct('${p._id}')">Delete</button>
+        </td>
+      `;
+      list.appendChild(row);
+    });
+  } catch (err) {
+    list.innerHTML = '<tr><td colspan="8" style="color:red;">Failed to load products.</td></tr>';
+    console.error(err);
+  }
+}
+
+async function submitProductForm(event) {
+  event.preventDefault();
+
+  const payload = {
+    name: document.getElementById('name').value.trim(),
+    costPrice: parseFloat(document.getElementById('costPrice').value),
+    price: parseFloat(document.getElementById('price').value),
+    entryDate: document.getElementById('entryDate').value,
+    quantity: parseInt(document.getElementById('quantity').value),
+    sku: document.getElementById('sku').value.trim(),
+    imageUrl: document.getElementById('imageUrl').value.trim()
+  };
+
+  try {
+    let res;
+    if (editingProductId) {
+      res = await fetch('/api/products/' + editingProductId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText);
+    }
+
+    document.getElementById('status').textContent = editingProductId ? 'Product updated.' : 'Product added.';
+    resetForm();
+    loadProducts();
+  } catch (err) {
+    alert('Failed to save product: ' + err.message);
+    console.error(err);
+  }
+}
+
+function resetForm() {
+  editingProductId = null;
+  document.getElementById('product-form').reset();
+  document.getElementById('submit-btn').textContent = 'Add Product';
+  document.getElementById('cancel-btn').style.display = 'none';
+  document.getElementById('status').textContent = '';
+}
+
+function cancelEdit() {
+  resetForm();
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Are you sure to delete this product?')) return;
+
+  try {
+    const res = await fetch('/api/products/' + id, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || 'Delete failed');
+    }
+    document.getElementById('status').textContent = 'Product deleted.';
+    setTimeout(() => document.getElementById('status').textContent = '', 3000);
+    loadProducts();
+  } catch (err) {
+    alert('Failed to delete product. ' + err.message);
+    console.error(err);
+  }
+}
+
+async function startEditProduct(id) {
+  try {
+    const res = await fetch('/api/products/' + id);
+    const p = await res.json();
+
+    editingProductId = id;
+    document.getElementById('name').value = p.name || '';
+    document.getElementById('costPrice').value = p.costPrice || '';
+    document.getElementById('price').value = p.price || '';
+    document.getElementById('entryDate').value = p.entryDate?.split('T')[0] || '';
+    document.getElementById('quantity').value = p.quantity || 1;
+    document.getElementById('sku').value = p.sku || '';
+
+    document.getElementById('imageUrl').value = p.imageUrl || '';
+    document.getElementById('submit-btn').textContent = 'Update Product';
+    document.getElementById('cancel-btn').style.display = 'inline-block';
+    document.getElementById('status').textContent = '';
+  } catch (err) {
+    alert('Failed to load product for editing.');
+    console.error(err);
+  }
+}
+
+loadProducts();
+</script>
+
+</body>
+</html>

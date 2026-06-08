@@ -16,7 +16,24 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongo:27017/auth';
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey_change_me_in_prod';
 
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('Auth Service: MongoDB connected'))
+  .then(async () => {
+    console.log('Auth Service: MongoDB connected');
+
+    const existingUser = await User.findOne({ username: 'admin' });
+
+    if (!existingUser) {
+      const hashedPassword = await bcrypt.hash('123456', 10);
+
+      await User.create({
+        username: 'admin',
+        password: hashedPassword
+      });
+
+      console.log('✅ Default admin account created');
+    } else {
+      console.log('ℹ️ Admin account already exists');
+    }
+  })
   .catch(err => {
     console.error('Auth Service: MongoDB error:', err);
     process.exit(1);

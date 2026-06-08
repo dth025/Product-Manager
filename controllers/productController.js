@@ -1,7 +1,7 @@
 const Product = require('../models/Product');
 const StockTransaction = require('../models/StockTransaction');
 
-// Hàm xóa nhiều key theo pattern trong Redis (đảm bảo tương thích redis v4+)
+// Hàm xóa nhiều key theo pattern trong Redis
 async function delPattern(redisClient, pattern) {
   try {
     const keys = await redisClient.keys(pattern);
@@ -46,7 +46,7 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-// Lấy tất cả sản phẩm (có cache + lọc + tìm kiếm)
+// Lấy tất cả sản phẩm 
 exports.getAllProducts = async (req, res) => {
   try {
     const redisClient = req.app.get('redisClient');
@@ -103,16 +103,31 @@ exports.updateProduct = async (req, res) => {
       { new: true }
     );
 
-    if (req.body.quantity != null && afterQuantity !== beforeQuantity) {
-      await StockTransaction.create({
-        productId: existing._id,
-        type: afterQuantity > beforeQuantity ? 'IN' : 'OUT',
-        quantity: Math.abs(afterQuantity - beforeQuantity),
-        beforeQuantity,
-        afterQuantity,
-        note: req.body.note || 'Stock adjustment',
-      });
-    }
+ if (req.body.quantity != null && afterQuantity !== beforeQuantity) {
+
+  if (afterQuantity > beforeQuantity) {
+    await StockTransaction.create({
+      productId: existing._id,
+      type: 'IN',
+      quantity: afterQuantity - beforeQuantity,
+      beforeQuantity,
+      afterQuantity,
+      note: req.body.note || 'NHẬP KHO',
+    });
+  } 
+  
+  else if (afterQuantity < beforeQuantity) {
+    await StockTransaction.create({
+      productId: existing._id,
+      type: 'OUT',
+      quantity: beforeQuantity - afterQuantity, 
+      beforeQuantity,
+      afterQuantity,
+      note: req.body.note || 'XUẤT KHO',
+    });
+  }
+
+}
 
     const redisClient = req.app.get('redisClient');
     await delPattern(redisClient, 'products:*');

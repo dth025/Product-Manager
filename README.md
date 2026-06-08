@@ -1,178 +1,108 @@
-# Tài liệu cấu trúc dự án Product Service
+# Tài liệu cấu trúc dự án Product Service & Auth Service (Microservices)
 
 ## 1. Tổng quan hệ thống
 
-Đây là một dịch vụ backend quản lý sản phẩm (Product Service) được xây dựng bằng Node.js với Express, kết nối với MongoDB để lưu trữ dữ liệu và Redis để cache.
+Đây là một hệ thống backend kết hợp giao diện quản lý được xây dựng theo kiến trúc Microservices với Node.js và Express. Hệ thống bao gồm 2 dịch vụ chính, kết nối với MongoDB và Redis.
 
-- `Node.js` + `Express` dùng để tạo API RESTful.
-- `MongoDB` dùng để lưu dữ liệu sản phẩm.
+- **Product Service** (Cổng `5000`): Quản lý sản phẩm, tồn kho và cung cấp giao diện người dùng. Có sử dụng Redis để cache dữ liệu API.
+- **Auth Service** (Cổng `5001`): Dịch vụ xác thực độc lập, xử lý Đăng ký, Đăng nhập và sinh JWT Token.
+- `MongoDB` dùng để lưu trữ dữ liệu. Dữ liệu của Product và Auth được tách biệt hoàn toàn ở 2 database khác nhau (`products` và `auth`).
 - `Redis` dùng để cache kết quả lấy danh sách sản phẩm, tăng hiệu năng.
-- `Docker` và `docker-compose` dùng để chạy đồng thời 3 service: MongoDB, Redis, và `product-service`.
+- `Docker Compose` dùng để chạy đồng thời cả 4 thành phần: MongoDB, Redis, Product Service, Auth Service.
 
 ## 2. Mục tiêu chính
 
-- Quản lý sản phẩm với các thao tác CRUD: tạo, đọc, cập nhật, xoá.
-- Hỗ trợ tìm kiếm và lọc sản phẩm.
-- Hỗ trợ nhập kho và bán hàng trực tiếp từ giao diện.
-- Hỗ trợ báo cáo tồn kho và lịch sử giao dịch.
-- Cung cấp cache cho API lấy tất cả sản phẩm để giảm tải MongoDB.
-- Chạy được trong môi trường container hoá.
+- **Product Service**: 
+  - Quản lý sản phẩm với các thao tác CRUD.
+  - Hỗ trợ nhập kho và bán hàng trực tiếp từ giao diện được chia khu vực rõ ràng.
+  - Bộ đệm Cache (Redis) giúp tối ưu hiệu suất API.
+- **Auth Service**:
+  - Quản lý người dùng và cấp phát Token JWT bảo mật.
 
 ## 3. Cấu trúc thư mục
 
-```
-product-service/
-├── controllers/
-│   ├── productController.js
-│   └── stockController.js
-├── models/
-│   ├── Product.js
-│   └── StockTransaction.js
-├── public/
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
-├── routes/
-│   ├── productRoutes.js
-│   └── stockRoutes.js
-├── .env
-├── docker-compose.yml
-├── Dockerfile
-├── index.js
-├── package.json
-└── README.md (nếu có)
+```text
+Product-Manager/
+├── auth-service/                  # Dịch vụ xác thực
+│   ├── models/
+│   │   └── User.js                # Schema tài khoản
+│   ├── index.js                   # Entrypoint, API Auth
+│   ├── package.json
+│   └── Dockerfile
+├── product-service/               # Dịch vụ sản phẩm
+│   ├── controllers/
+│   ├── models/
+│   ├── public/
+│   ├── routes/
+│   ├── Dockerfile
+│   ├── index.js
+│   └── package.json
+├── docker-compose.yml             # Cấu hình chạy toàn bộ hệ thống
+└── README.md
 ```
 
-### 3.1 `index.js`
+## 4. Cấu hình Docker (`docker-compose.yml`)
 
-- Là entrypoint của ứng dụng.
-- Khởi tạo Express app và cấu hình middleware:
-  - `cors()`
-  - `express.json()`
-  - `express.urlencoded()`
-- Kết nối tới MongoDB và Redis.
-- Đăng ký route API: `/api/products`.
-- Phục vụ file tĩnh từ thư mục `public/`.
-- Lắng nghe cổng `PORT`.
+Hệ thống được thiết lập chạy bằng lệnh duy nhất qua Docker Compose.
+- `mongo`: Chạy ở cổng `27017`.
+- `redis`: Chạy ở cổng `6379`.
+- `product-service`: Chạy ở cổng `5000`, mount thư mục hiện tại để tự động reload khi code thay đổi, truy cập DB `products`.
+- `auth-service`: Chạy ở cổng `5001`, mount thư mục `auth-service`, truy cập DB `auth`.
 
-### 3.2 `controllers/productController.js`
+## 5. API chính
 
-- Chứa logic xử lý cho các API sản phẩm.
-- Các phương thức chính:
-  - `createProduct` – tạo sản phẩm mới, kiểm tra SKU tồn tại và xoá cache.
-  - `getAllProducts` – lấy danh sách sản phẩm, sử dụng cache Redis, hỗ trợ tìm kiếm và lọc theo category.
-  - `getProductById` – lấy chi tiết sản phẩm theo ID.
-  - `updateProduct` – cập nhật sản phẩm, kiểm tra trùng SKU, ghi lịch sử biến động tồn kho và xoá cache.
-  - `deleteProduct` – xoá sản phẩm và xoá cache.
-- Quản lý cache bằng hàm `delPattern(redisClient, pattern)` để xoá các key liên quan khi dữ liệu thay đổi.
+### Product Service (Port `5000`)
+- `POST /api/products` - Thêm sản phẩm mới.
+- `GET /api/products` - Lấy danh sách sản phẩm.
+- `GET /api/products/:id` - Lấy chi tiết sản phẩm.
+- `PUT /api/products/:id` - Cập nhật thông tin hoặc số lượng (giao dịch tồn kho).
+- `DELETE /api/products/:id` - Xóa sản phẩm.
+- `GET /api/stock/report` - Báo cáo tồn kho.
+- `GET /api/stock/transactions` - Lịch sử nhập/xuất kho.
 
-### 3.2.1 `controllers/stockController.js`
+### Auth Service (Port `5001`)
+- `POST /api/auth/register` - Đăng ký tài khoản (Yêu cầu body `{ username, password }`).
+- `POST /api/auth/login` - Đăng nhập (Trả về `token` JWT).
 
-- Chứa logic cho báo cáo tồn kho và lịch sử giao dịch.
-- Các phương thức chính:
-  - `getStockReport` – trả về tổng sản phẩm, tổng số lượng, tổng giá trị tồn và danh sách sản phẩm sắp hết.
-  - `getStockTransactions` – trả về lịch sử giao dịch nhập kho / bán hàng theo lọc ngày, loại hoặc sản phẩm.
+## 6. Sửa lỗi & Nâng cấp nổi bật
+- **Visual Separation**: Giao diện UI (`index.html`) đã được tinh chỉnh, tách biệt trực quan "Thông tin chung" và "Thông tin tồn kho" giúp người dùng dễ dàng thao tác mà không làm thay đổi luồng nghiệp vụ API nguyên bản.
+- **Sửa lỗi Redis**: Sửa lỗi cấu hình `legacyMode: true` (không tương thích với Promise/await) của thư viện `redis` ở Product Service, giúp hệ thống không bị treo khi truy vấn danh sách và cập nhật sản phẩm.
 
-### 3.3 `models/Product.js`
+---
 
-- Định nghĩa schema `Product` với Mongoose.
-- Các field chính:
-  - `sku`: unique, bắt buộc.
-  - `name`: bắt buộc.
-  - `costPrice`, `price`, `quantity`: bắt buộc.
-  - `entryDate`: ngày nhập hàng.
-  - `imageUrl`: URL ảnh.
-  - `createdAt`, `updatedAt`: tự động cập nhật.
-- Có middleware `pre('save')` và `pre('findOneAndUpdate')` để cập nhật `updatedAt`.
+## 7. Cách chạy dự án
 
-### 3.4 `routes/productRoutes.js`
+### Cách 1: Sử dụng Docker Compose (Khuyên dùng - Nhanh nhất)
+Yêu cầu: Máy đã cài đặt Docker Desktop.
 
-- Định nghĩa các route RESTful cho sản phẩm:
-  - `POST /api/products` – tạo sản phẩm.
-  - `GET /api/products` – danh sách sản phẩm.
-  - `GET /api/products/:id` – chi tiết sản phẩm.
-  - `PUT /api/products/:id` – cập nhật sản phẩm.
-  - `DELETE /api/products/:id` – xoá sản phẩm.
-- Route này chuyển yêu cầu đến `productController`.
+```bash
+# Khởi chạy tất cả các dịch vụ (Database + 2 NodeJS server) dưới nền
+docker compose up -d
 
-### 3.4.1 `routes/stockRoutes.js`
+# Xem log các service
+docker compose logs -f
 
-- Định nghĩa các route cho báo cáo và lịch sử giao dịch:
-  - `GET /api/stock/report` – lấy báo cáo tồn kho.
-  - `GET /api/stock/transactions` – lấy lịch sử giao dịch nhập kho / bán hàng.
+# Tắt toàn bộ dịch vụ
+docker compose down
+```
 
-### 3.5 `public/`
+### Cách 2: Chạy trực tiếp qua NPM (Development)
+Yêu cầu: Đã tự khởi động MongoDB ở `localhost:27017` và Redis ở `localhost:6379`.
 
-- Thư mục chứa tài nguyên tĩnh cho UI quản lý sản phẩm.
-- `public/index.html` là trang dashboard chính.
-- `public/styles.css` chứa toàn bộ CSS cho giao diện.
-- `public/app.js` chứa logic CRUD, tìm kiếm và tính năng nhập kho / bán hàng.
-- `index.js` cấu hình `express.static()` để phục vụ nội dung trong `public/`.
+**Bước 1: Chạy Product Service**
+Mở Terminal 1 ở thư mục `Product-Manager/product-service`:
+```bash
+cd product-service
+npm install
+npm run dev
+```
+Dịch vụ sẽ chạy ở: `http://localhost:5000`
 
-## 4. Cấu hình Docker
-
-### 4.1 `docker-compose.yml`
-
-- Khởi tạo 3 service:
-  - `mongo`: container MongoDB.
-  - `redis`: container Redis.
-  - `product-service`: container ứng dụng Node.js.
-- Các cổng:
-  - `mongo`: `27017:27017`
-  - `redis`: `6379:6379`
-  - `product-service`: `5000:5000`
-- `product-service` có volume mount `.:/app` để tự động cập nhật mã nguồn khi phát triển.
-
-### 4.2 `Dockerfile`
-
-- Dùng image `node:20`.
-- Thiết lập `WORKDIR /app`.
-- Copy `package*.json` và cài dependencies bằng `npm install`.
-- Copy toàn bộ mã nguồn.
-- Expose cổng `5000`.
-- Khởi chạy `node index.js`.
-
-## 5. Mô tả luồng dữ liệu
-
-1. Client gọi API tới `http://localhost:5000/api/products`.
-2. `productRoutes` nhận request và chuyển tiếp tới `productController`.
-3. `productController` xử lý:
-   - Nếu là GET danh sách, kiểm tra cache Redis trước.
-   - Nếu cache tồn tại, trả về ngay.
-   - Nếu không, truy vấn MongoDB, lưu kết quả vào Redis và trả về kết quả.
-4. Nếu có thay đổi dữ liệu (POST/PUT/DELETE), controller sẽ xoá cache liên quan.
-5. MongoDB lưu trữ dữ liệu sản phẩm, Redis lưu cache tạm thời.
-
-## 6. Cách chạy dự án
-
-- Chạy nhanh bằng Docker Compose:
-  ```bash
-  docker-compose up
-  ```
-- Chạy ở chế độ nền:
-  ```bash
-  docker-compose up -d
-  ```
-- Nếu muốn chạy local không dùng Docker:
-  ```bash
-  npm install
-  npm start
-  ```
-
-## 7. API chính
-
-- `POST /api/products`
-- `GET /api/products`
-- `GET /api/products/:id`
-- `PUT /api/products/:id`
-- `DELETE /api/products/:id`
-
-## 8. Điểm nổi bật để trình bày
-
-- Kiến trúc tách biệt rõ:
-  - `routes/` chịu trách nhiệm điều hướng.
-  - `controllers/` xử lý nghiệp vụ.
-  - `models/` định nghĩa dữ liệu.
-- Sử dụng Docker Compose để triển khai đầy đủ nhiều service.
-- Kết hợp MongoDB với Redis để tối ưu hoá hiệu năng.
-- Hỗ trợ tìm kiếm và lọc sản phẩm.
+**Bước 2: Chạy Auth Service**
+Mở Terminal 2 ở thư mục `Product-Manager/auth-service`:
+```bash
+cd auth-service
+npm install
+npm run dev
+```
+Dịch vụ sẽ chạy ở: `http://localhost:5001`

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Product Manager</title>
+
+  <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <header>
+    <div>
+      <h1>Product Manager</h1>
+      <p>
+        Modern dashboard quản lý sản phẩm với Node.js, Express,
+        MongoDB và Redis.
+      </p>
+    </div>
+
+    <div class="logo">
+      📦
+    </div>
+  </header>
+
+  <div class="stats">
+
+    <div class="stat-box">
+      <h3>Tổng sản phẩm</h3>
+      <p id="total-products">0</p>
+    </div>
+
+    <div class="stat-box">
+      <h3>Tổng số lượng</h3>
+      <p id="total-quantity">0</p>
+    </div>
+
+    <div class="stat-box">
+      <h3>Tổng giá trị bán</h3>
+      <p id="total-revenue">0₫</p>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <form class="product-form" id="product-form">
+
+      <h3 style="grid-column: 1 / -1; margin-bottom: 0px; margin-top: 10px; border-bottom: 2px solid var(--border); padding-bottom: 8px;">1. Thông tin chung</h3>
+
+      <div class="product-field">
+        <label>Tên sản phẩm</label>
+        <input type="text" id="name" required />
+      </div>
+
+      <div class="product-field">
+        <label> Mã sản phẩm</label>
+        <input type="text" id="sku" required />
+      </div>
+
+      <div class="product-field">
+        <label>Ảnh sản phẩm (URL)</label>
+        <input type="text" id="imageUrl" />
+      </div>
+
+      <h3 style="grid-column: 1 / -1; margin-bottom: 0px; margin-top: 10px; border-bottom: 2px solid var(--border); padding-bottom: 8px;">2. Giá & Nhập kho ban đầu</h3>
+
+      <div class="product-field">
+        <label>Giá vốn</label>
+        <input type="number" id="costPrice" required />
+      </div>
+
+      <div class="product-field">
+        <label>Giá bán</label>
+        <input type="number" id="price" required />
+      </div>
+
+      <div class="product-field">
+        <label>Số lượng</label>
+        <input type="number" id="quantity" required />
+      </div>
+
+      <div class="product-field">
+        <label>Ngày nhập</label>
+        <input type="date" id="entryDate" required />
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit" id="submit-btn">
+          Thêm sản phẩm
+        </button>
+
+        <button
+          class="secondary"
+          type="button"
+          id="cancel-btn"
+          style="display:none;"
+          onclick="cancelEdit()"
+        >
+          Hủy
+        </button>
+      </div>
+
+    </form>
+
+    <div id="status"></div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="search-box">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Tìm kiếm sản phẩm..."
+      />
+    </div>
+
+    <div class="table-wrapper">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Ảnh</th>
+            <th>Tên</th>
+            <th>Mã sản phẩm</th>
+            <th>Ngày nhập</th>
+            <th>Giá vốn</th>
+            <th>Giá bán</th>
+            <th>Tồn kho</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+
+        <tbody id="product-list">
+          <tr>
+            <td colspan="8" class="empty">
+              Loading...
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <div class="card" id="stock-report-card">
+    <h2>Báo cáo tồn kho</h2>
+
+    <div class="stats">
+      <div class="stat-box">
+        <h3>Tổng sản phẩm</h3>
+        <p id="report-total-products">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Tổng số lượng tồn</h3>
+        <p id="report-total-quantity">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Tổng giá trị tồn</h3>
+        <p id="report-total-value">0₫</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px; padding: 18px;">
+      <h3>Danh sách sản phẩm sắp hết</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên</th>
+              <th>SKU</th>
+              <th>Số lượng</th>
+            </tr>
+          </thead>
+          <tbody id="low-stock-list">
+            <tr>
+              <td colspan="3" class="empty">Không có sản phẩm sắp hết.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="transaction-history-card">
+    <h2>Lịch sử giao dịch</h2>
+
+    <div class="search-box">
+      <input type="text" id="transactionSearchInput" placeholder="🔍 Tìm kiếm giao dịch..." />
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Loại</th>
+            <th>Số lượng</th>
+            <th>Trước</th>
+            <th>Sau</th>
+            <th>Ghi chú</th>
+            <th>Thời gian</th>
+          </tr>
+        </thead>
+        <tbody id="transaction-list">
+          <tr>
+            <td colspan="7" class="empty">Loading transactions...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script src="./app.js"></script>
+
+</body>
+</html>

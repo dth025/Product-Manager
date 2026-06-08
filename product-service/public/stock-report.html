@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard sản phẩm</title>
+  <title>Báo cáo tồn kho</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
-<body data-page="dashboard">
+<body data-page="stock">
   <div class="container">
     <header>
       <div>
-        <h1>Dashboard sản phẩm</h1>
-        <p>Xem nhanh danh sách sản phẩm, tồn kho và giao dịch mới nhất.</p>
+        <h1>Báo cáo tồn kho</h1>
+        <p>Xem tổng số lượng, giá trị tồn và những sản phẩm cần bổ sung.</p>
       </div>
-      <div class="logo"></div>
+      <div class="logo">📊</div>
     </header>
 
     <div class="navbar" id="nav-links">
@@ -34,44 +34,37 @@
       </div>
       <div class="stat-box">
         <h3>Tổng giá trị tồn</h3>
-        <p id="report-total-value">0</p>
+        <p id="report-total-value">0₫</p>
       </div>
     </div>
 
     <div class="card">
-      <h2>Trạng thái kho</h2>
-      <div class="stats">
-        <div class="stat-box">
-          <h3>Sản phẩm sắp hết</h3>
-          <p id="low-stock-count">0</p>
-        </div>
-        <div class="stat-box">
-          <h3>Sản phẩm hết hàng</h3>
-          <p id="out-of-stock-count">0</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Sản phẩm mới nhất</h2>
+      <h2>Sản phẩm sắp hết</h2>
       <div class="table-wrapper">
         <table>
           <thead>
             <tr>
               <th>Tên</th>
               <th>SKU</th>
-              <th>Ngày nhập</th>
-              <th>Tồn kho</th>
-              <th>Trạng thái</th>
+              <th>Số lượng</th>
             </tr>
           </thead>
-          <tbody id="latest-products-body"></tbody>
+          <tbody id="low-stock-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Sản phẩm đã hết hàng</h2>
+      <div class="table-wrapper">
+        <table>
+          <tbody id="out-of-stock-list"></tbody>
         </table>
       </div>
     </div>
   </div>
 
   <script src="./js/shared.js" defer></script>
-  <script src="./js/dashboard.js" defer></script>
+  <script src="./js/stock-report.js" defer></script>
 </body>
 </html>

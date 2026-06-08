@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch sử giao dịch</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-page="transactions">
+  <div class="container">
+    <header>
+      <div>
+        <h1>Lịch sử giao dịch</h1>
+        <p>Theo dõi toàn bộ các giao dịch nhập kho và xuất kho.</p>
+      </div>
+      <div class="logo">📝</div>
+    </header>
+
+    <div class="navbar" id="nav-links">
+      <a href="./index.html" data-page="dashboard">Dashboard</a>
+      <a href="./products.html" data-page="products">Sản phẩm</a>
+      <a href="./stock-report.html" data-page="stock">Tồn kho</a>
+      <a href="./transactions.html" data-page="transactions">Giao dịch</a>
+    </div>
+
+    <div class="card">
+      <div class="stats">
+        <div class="stat-box">
+          <h3>Lọc theo loại</h3>
+          <select id="transaction-type">
+            <option value="ALL">Tất cả</option>
+            <option value="IN">Nhập kho</option>
+            <option value="OUT">Xuất kho</option>
+          </select>
+        </div>
+        <div class="stat-box">
+          <h3>Tìm kiếm</h3>
+          <input id="transaction-search" type="search" placeholder="Tìm theo tên hoặc SKU..." />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Sản phẩm</th>
+              <th>SKU</th>
+              <th>Loại</th>
+              <th>Số lượng</th>
+              <th>Tồn trước</th>
+              <th>Tồn sau</th>
+              <th>Ghi chú</th>
+              <th>Thời gian</th>
+            </tr>
+          </thead>
+          <tbody id="transaction-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/shared.js" defer></script>
+  <script src="./js/transactions.js" defer></script>
+</body>
+</html>

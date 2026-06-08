@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý sản phẩm</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body data-page="products">
+  <div class="container">
+    <header>
+      <div>
+        <h1>Quản lý sản phẩm</h1>
+        <p>Thêm, sửa, xóa và xem danh sách sản phẩm trực tiếp tại đây.</p>
+      </div>
+      <div class="logo">🛒</div>
+    </header>
+
+    <div class="navbar" id="nav-links">
+      <a href="./index.html" data-page="dashboard">Dashboard</a>
+      <a href="./products.html" data-page="products">Sản phẩm</a>
+      <a href="./stock-report.html" data-page="stock">Tồn kho</a>
+      <a href="./transactions.html" data-page="transactions">Giao dịch</a>
+    </div>
+
+    <div class="card">
+      <h2>Thông tin sản phẩm</h2>
+      <form id="product-form" class="product-form">
+        <div class="product-field">
+          <label for="name">Tên sản phẩm</label>
+          <input id="name" name="name" required placeholder="Nhập tên sản phẩm" />
+        </div>
+        <div class="product-field">
+          <label for="sku">SKU</label>
+          <input id="sku" name="sku" required placeholder="Mã SKU duy nhất" />
+        </div>
+        <div class="product-field">
+          <label for="entryDate">Ngày nhập</label>
+          <input id="entryDate" name="entryDate" type="date" required />
+        </div>
+        <div class="product-field">
+          <label for="costPrice">Giá vốn</label>
+          <input id="costPrice" name="costPrice" type="number" min="0" required placeholder="0" />
+        </div>
+        <div class="product-field">
+          <label for="price">Giá bán</label>
+          <input id="price" name="price" type="number" min="0" required placeholder="0" />
+        </div>
+        <div class="product-field">
+          <label for="quantity">Số lượng</label>
+          <input id="quantity" name="quantity" type="number" min="0" required placeholder="0" />
+        </div>
+        <div class="product-field">
+          <label for="image">Ảnh sản phẩm</label>
+          <input id="image" name="image" type="file" accept="image/*" />
+        </div>
+        <div class="actions">
+          <button id="cancel-btn" type="button" class="secondary" style="display:none;" onclick="cancelEdit()">Hủy</button>
+          <button id="submit-btn" type="submit" class="primary">Thêm sản phẩm</button>
+        </div>
+      </form>
+      <div id="status"></div>
+    </div>
+
+    <div class="card">
+      <div class="search-box">
+        <input id="searchInput" type="text" placeholder="Tìm sản phẩm theo tên hoặc SKU..." />
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Ảnh</th>
+              <th>Tên</th>
+              <th>SKU</th>
+              <th>Ngày nhập</th>
+              <th>Giá vốn</th>
+              <th>Giá bán</th>
+              <th>Tồn kho</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="product-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/shared.js" defer></script>
+  <script src="./js/products.js" defer></script>
+</body>
+</html>

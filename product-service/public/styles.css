@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 :root {
   --bg: #f8fafc;
   --bg-soft: #ffffff;
@@ -19,7 +21,7 @@
 }
 
 body {
-  font-family: Inter, sans-serif;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   background:
     radial-gradient(circle at top left, rgba(99, 102, 241, 0.08) 0%, transparent 35%),
     radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.08) 0%, transparent 35%),
@@ -55,6 +57,32 @@ header h1 {
   margin-bottom: 8px;
   color: #1e1b4b;
   font-weight: 800;
+}
+
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.navbar a {
+  padding: 12px 18px;
+  border-radius: 14px;
+  color: #334155;
+  text-decoration: none;
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  transition: 0.25s;
+}
+
+.navbar a:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+.navbar a.active {
+  background: linear-gradient(135deg, #6366f1, var(--accent));
+  color: white;
 }
 
 header p {
@@ -171,6 +199,27 @@ header p {
   color: var(--text);
   font-size: 0.95rem;
   transition: 0.25s;
+}
+
+.product-form input[type="file"] {
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.product-form input[type="file"]::file-selector-button {
+  cursor: pointer;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  margin-right: 12px;
+  transition: 0.25s;
+}
+
+.product-form input[type="file"]::file-selector-button:hover {
+  background: var(--accent-hover);
 }
 
 .product-form input:focus {

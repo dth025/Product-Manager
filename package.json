@@ -1,7 +1,7 @@
 {
   "scripts": {
     "install-all": "npm install && cd product-service && npm install && cd ../auth-service && npm install && cd ../inventory-service && npm install",
-    "start": "npx -y concurrently \"node start-db.js\" \"npm run start-product\" \"npm run start-auth\" \"npm run start-inventory\"",
+    "start": "node start-db.js",
     "start-product": "cd product-service && npm run start",
     "start-auth": "cd auth-service && npm run start",
     "start-inventory": "cd inventory-service && npm run start"

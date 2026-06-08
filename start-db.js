@@ -1,6 +1,7 @@
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 
 async function startTempDB() {
   console.log('Đang tải cấu hình MongoDB tạm thời (Memory Server)...');
@@ -47,6 +48,10 @@ async function startTempDB() {
   console.log('2. Quay lại các cửa sổ chạy npm run dev của product và auth để xem kết quả!');
   console.log('3. Redis lỗi đã được fix, ứng dụng sẽ chạy ngay cả khi không có Redis.');
   
+  console.log('\n🚀 Đang khởi động các dịch vụ (Product, Auth, Inventory)...');
+  const npx = /^win/.test(process.platform) ? 'npx.cmd' : 'npx';
+  spawn(npx, ['-y', 'concurrently', '\"npm run start-product\"', '\"npm run start-auth\"', '\"npm run start-inventory\"'], { stdio: 'inherit' });
+
   // Keep process alive
   process.on('SIGINT', async () => {
     console.log('Đang tắt database...');

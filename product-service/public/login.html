@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+    }
+  </style>
+</head>
+<body data-page="login">
+  <div class="container login-container">
+    <div class="card">
+      <h2 style="text-align: center; margin-bottom: 24px;">Admin Login</h2>
+      <form id="login-form" class="product-form" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="product-field">
+          <label for="username">Username</label>
+          <input type="text" id="username" required placeholder="Nhập username" />
+        </div>
+        <div class="product-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" required placeholder="Nhập password" />
+        </div>
+        <button type="submit" class="primary" style="margin-top: 10px;">Đăng nhập</button>
+        <p id="status"></p>
+      </form>
+    </div>
+  </div>
+  <script src="./js/login.js" defer></script>
+</body>
+</html>

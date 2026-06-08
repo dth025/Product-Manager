@@ -50,5 +50,20 @@ services:
       - ./auth-service:/app
     restart: unless-stopped
 
+  inventory-service:
+    build:
+      context: ./inventory-service
+      dockerfile: Dockerfile
+    depends_on:
+      - mongo
+    ports:
+      - 5002:5002
+    environment:
+      - PORT=5002
+      - MONGO_URI=mongodb://mongo:27017/inventory
+    volumes:
+      - ./inventory-service:/app
+    restart: unless-stopped
+
 volumes:
   mongo-data:

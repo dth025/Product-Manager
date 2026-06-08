@@ -1,6 +1,7 @@
 const transactionSearchInput = document.getElementById('transaction-search');
 const transactionTypeSelect = document.getElementById('transaction-type');
 const transactionList = document.getElementById('transaction-list');
+const INVENTORY_URL = 'http://localhost:5002/api/inventory';
 
 transactionSearchInput?.addEventListener('input', filterTransactionsOnPage);
 transactionTypeSelect?.addEventListener('change', loadTransactions);
@@ -10,23 +11,35 @@ async function loadTransactions() {
 
   try {
     const type = transactionTypeSelect?.value;
-    const params = new URLSearchParams();
-    if (type && type !== 'ALL') params.set('type', type);
-    params.set('limit', '100');
+    
+    const [productsRes, transRes] = await Promise.all([
+      fetch('/api/products'),
+      fetch(`${INVENTORY_URL}/transactions`)
+    ]);
 
-    const res = await fetch(`/api/stock/transactions?${params.toString()}`);
-    const data = await res.json();
-    const transactions = data.transactions || [];
+    const products = await productsRes.json();
+    let transactions = await transRes.json();
+
+    if (type && type !== 'ALL') {
+      transactions = transactions.filter(t => t.type === type);
+    }
+
+    const productMap = {};
+    if (Array.isArray(products)) {
+      products.forEach(p => { productMap[p._id] = p; });
+    }
 
     if (transactions.length === 0) {
       transactionList.innerHTML = '<tr><td colspan="7" class="empty">Chưa có giao dịch nào.</td></tr>';
       return;
     }
 
-    transactionList.innerHTML = transactions.map((item) => `
+    transactionList.innerHTML = transactions.map((item) => {
+      const prod = productMap[item.productId] || {};
+      return `
       <tr>
-        <td>${item.productId?.name || 'Không xác định'}</td>
-        <td>${item.productId?.sku || '-'}</td>
+        <td>${prod.name || 'Không xác định'}</td>
+        <td>${prod.sku || '-'}</td>
         <td>${item.type === 'IN' ? 'Nhập kho' : 'Xuất kho'}</td>
         <td>${item.quantity}</td>
         <td>${item.beforeQuantity}</td>
@@ -34,7 +47,8 @@ async function loadTransactions() {
         <td>${item.note || '-'}</td>
         <td>${formatDate(item.createdAt)}</td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
 
     filterTransactionsOnPage();
   } catch (err) {

@@ -21,7 +21,6 @@
 
 ## 3. Cấu trúc thư mục
 
-```text
 Product-Manager/
 ├── auth-service/                  # Dịch vụ xác thực
 │   ├── models/
@@ -39,7 +38,7 @@ Product-Manager/
 │   └── package.json
 ├── docker-compose.yml             # Cấu hình chạy toàn bộ hệ thống
 └── README.md
-```
+
 
 ## 4. Cấu hình Docker (`docker-compose.yml`)
 

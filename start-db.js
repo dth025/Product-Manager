@@ -32,6 +32,16 @@ async function startTempDB() {
     console.log('✅ Đã cập nhật kết nối cho: auth-service/.env');
   }
 
+  // Cập nhật inventory-service/.env
+  const inventoryEnvPath = path.join(__dirname, 'inventory-service', '.env');
+  if (fs.existsSync(inventoryEnvPath)) {
+    let content = fs.readFileSync(inventoryEnvPath, 'utf8');
+    content = content.replace(/MONGO_URI=.*/g, `MONGO_URI=${uri}inventory`);
+    fs.writeFileSync(inventoryEnvPath, content);
+    console.log('✅ Đã cập nhật kết nối cho: inventory-service/.env');
+  }
+
+
   console.log('\n⚠️ QUAN TRỌNG:');
   console.log('1. Vui lòng GIỮ NGUYÊN CỬA SỔ TERMINAL NÀY để Database duy trì hoạt động.');
   console.log('2. Quay lại các cửa sổ chạy npm run dev của product và auth để xem kết quả!');

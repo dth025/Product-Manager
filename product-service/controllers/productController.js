@@ -1,5 +1,4 @@
 const Product = require('../models/Product');
-const StockTransaction = require('../models/StockTransaction');
 
 // Hàm xóa nhiều key theo pattern trong Redis
 async function delPattern(redisClient, pattern) {
@@ -25,17 +24,6 @@ exports.createProduct = async (req, res) => {
     }
 
     const product = await Product.create(req.body);
-
-    if (product.quantity > 0) {
-      await StockTransaction.create({
-        productId: product._id,
-        type: 'IN',
-        quantity: product.quantity,
-        beforeQuantity: 0,
-        afterQuantity: product.quantity,
-        note: 'Initial stock',
-      });
-    }
 
     const redisClient = req.app.get('redisClient');
     await delPattern(redisClient, 'products:*');
@@ -94,40 +82,11 @@ exports.updateProduct = async (req, res) => {
     const existing = await Product.findById(req.params.id);
     if (!existing) return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
 
-    const beforeQuantity = existing.quantity || 0;
-    const afterQuantity = req.body.quantity != null ? Number(req.body.quantity) : beforeQuantity;
-
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
-      { ...req.body, quantity: afterQuantity },
+      req.body,
       { new: true }
     );
-
- if (req.body.quantity != null && afterQuantity !== beforeQuantity) {
-
-  if (afterQuantity > beforeQuantity) {
-    await StockTransaction.create({
-      productId: existing._id,
-      type: 'IN',
-      quantity: afterQuantity - beforeQuantity,
-      beforeQuantity,
-      afterQuantity,
-      note: req.body.note || 'NHẬP KHO',
-    });
-  } 
-  
-  else if (afterQuantity < beforeQuantity) {
-    await StockTransaction.create({
-      productId: existing._id,
-      type: 'OUT',
-      quantity: beforeQuantity - afterQuantity, 
-      beforeQuantity,
-      afterQuantity,
-      note: req.body.note || 'XUẤT KHO',
-    });
-  }
-
-}
 
     const redisClient = req.app.get('redisClient');
     await delPattern(redisClient, 'products:*');

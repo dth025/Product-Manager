@@ -6,6 +6,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const productRoutes = require('./routes/productRoutes');
+const stockRoutes = require('./routes/stockRoutes');
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ const publicDir = path.join(__dirname, 'public');
 app.use(express.static(publicDir));
 
 app.use('/api/products', productRoutes);
+app.use('/api/stock', stockRoutes);
 app.get('/', (req, res) => {
   res.send('Welcome to Product Service API');
 });

@@ -13,7 +13,8 @@
 
 - Quản lý sản phẩm với các thao tác CRUD: tạo, đọc, cập nhật, xoá.
 - Hỗ trợ tìm kiếm và lọc sản phẩm.
-- Hỗ trợ nhập kho và bán hàng trực tiếp từ giao diện quản lý.
+- Hỗ trợ nhập kho và bán hàng trực tiếp từ giao diện.
+- Hỗ trợ báo cáo tồn kho và lịch sử giao dịch.
 - Cung cấp cache cho API lấy tất cả sản phẩm để giảm tải MongoDB.
 - Chạy được trong môi trường container hoá.
 
@@ -22,13 +23,18 @@
 ```
 product-service/
 ├── controllers/
-│   └── productController.js
+│   ├── productController.js
+│   └── stockController.js
 ├── models/
-│   └── Product.js
+│   ├── Product.js
+│   └── StockTransaction.js
 ├── public/
-│   └── index.html
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
 ├── routes/
-│   └── productRoutes.js
+│   ├── productRoutes.js
+│   └── stockRoutes.js
 ├── .env
 ├── docker-compose.yml
 ├── Dockerfile
@@ -56,9 +62,16 @@ product-service/
   - `createProduct` – tạo sản phẩm mới, kiểm tra SKU tồn tại và xoá cache.
   - `getAllProducts` – lấy danh sách sản phẩm, sử dụng cache Redis, hỗ trợ tìm kiếm và lọc theo category.
   - `getProductById` – lấy chi tiết sản phẩm theo ID.
-  - `updateProduct` – cập nhật sản phẩm, kiểm tra trùng SKU và xoá cache.
+  - `updateProduct` – cập nhật sản phẩm, kiểm tra trùng SKU, ghi lịch sử biến động tồn kho và xoá cache.
   - `deleteProduct` – xoá sản phẩm và xoá cache.
 - Quản lý cache bằng hàm `delPattern(redisClient, pattern)` để xoá các key liên quan khi dữ liệu thay đổi.
+
+### 3.2.1 `controllers/stockController.js`
+
+- Chứa logic cho báo cáo tồn kho và lịch sử giao dịch.
+- Các phương thức chính:
+  - `getStockReport` – trả về tổng sản phẩm, tổng số lượng, tổng giá trị tồn và danh sách sản phẩm sắp hết.
+  - `getStockTransactions` – trả về lịch sử giao dịch nhập kho / bán hàng theo lọc ngày, loại hoặc sản phẩm.
 
 ### 3.3 `models/Product.js`
 
@@ -81,6 +94,12 @@ product-service/
   - `PUT /api/products/:id` – cập nhật sản phẩm.
   - `DELETE /api/products/:id` – xoá sản phẩm.
 - Route này chuyển yêu cầu đến `productController`.
+
+### 3.4.1 `routes/stockRoutes.js`
+
+- Định nghĩa các route cho báo cáo và lịch sử giao dịch:
+  - `GET /api/stock/report` – lấy báo cáo tồn kho.
+  - `GET /api/stock/transactions` – lấy lịch sử giao dịch nhập kho / bán hàng.
 
 ### 3.5 `public/`
 

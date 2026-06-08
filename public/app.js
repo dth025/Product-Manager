@@ -7,9 +7,16 @@ const productList = document.getElementById('product-list');
 const totalProducts = document.getElementById('total-products');
 const totalQuantity = document.getElementById('total-quantity');
 const totalRevenue = document.getElementById('total-revenue');
+const reportTotalProducts = document.getElementById('report-total-products');
+const reportTotalQuantity = document.getElementById('report-total-quantity');
+const reportTotalValue = document.getElementById('report-total-value');
+const lowStockList = document.getElementById('low-stock-list');
+const transactionList = document.getElementById('transaction-list');
+const transactionSearchInput = document.getElementById('transactionSearchInput');
 
 productForm.addEventListener('submit', submitProductForm);
 searchInput.addEventListener('input', filterProductsOnPage);
+transactionSearchInput.addEventListener('input', filterTransactionsOnPage);
 
 async function loadProducts() {
   productList.innerHTML = `
@@ -98,6 +105,95 @@ async function loadProducts() {
   }
 }
 
+async function loadStockReport() {
+  try {
+    const res = await fetch('/api/stock/report');
+    const data = await res.json();
+
+    reportTotalProducts.textContent = data.totalProducts;
+    reportTotalQuantity.textContent = data.totalQuantity;
+    reportTotalValue.textContent = (data.totalValue || 0).toLocaleString() + '₫';
+
+    if (!data.lowStock || data.lowStock.length === 0) {
+      lowStockList.innerHTML = `
+        <tr>
+          <td colspan="3" class="empty">Không có sản phẩm sắp hết.</td>
+        </tr>
+      `;
+    } else {
+      lowStockList.innerHTML = '';
+      data.lowStock.forEach((item) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-weight:600;">${item.name}</td>
+          <td>${item.sku}</td>
+          <td>${item.quantity}</td>
+        `;
+        lowStockList.appendChild(row);
+      });
+    }
+  } catch (err) {
+    lowStockList.innerHTML = `
+      <tr>
+        <td colspan="3" class="empty">Không thể tải báo cáo tồn kho.</td>
+      </tr>
+    `;
+    console.error(err);
+  }
+}
+
+async function loadStockTransactions() {
+  transactionList.innerHTML = `
+    <tr>
+      <td colspan="7" class="empty">Loading transactions...</td>
+    </tr>
+  `;
+
+  try {
+    const res = await fetch('/api/stock/transactions?limit=30');
+    const data = await res.json();
+
+    if (!data.transactions || data.transactions.length === 0) {
+      transactionList.innerHTML = `
+        <tr>
+          <td colspan="7" class="empty">Chưa có giao dịch nào.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    transactionList.innerHTML = '';
+    data.transactions.forEach((item) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.productId?.name || 'Không xác định'}</td>
+        <td>${item.type === 'IN' ? 'Nhập kho' : 'Bán hàng'}</td>
+        <td>${item.quantity}</td>
+        <td>${item.beforeQuantity}</td>
+        <td>${item.afterQuantity}</td>
+        <td>${item.note || '-'}</td>
+        <td>${new Date(item.createdAt).toLocaleString()}</td>
+      `;
+      transactionList.appendChild(row);
+    });
+  } catch (err) {
+    transactionList.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty">Không thể tải lịch sử giao dịch.</td>
+      </tr>
+    `;
+    console.error(err);
+  }
+}
+
+function filterTransactionsOnPage() {
+  const keyword = transactionSearchInput.value.toLowerCase();
+  const rows = document.querySelectorAll('#transaction-list tr');
+  rows.forEach((row) => {
+    row.style.display = row.innerText.toLowerCase().includes(keyword) ? '' : 'none';
+  });
+}
+
 async function submitProductForm(event) {
   event.preventDefault();
 
@@ -131,7 +227,9 @@ async function submitProductForm(event) {
       : '✅ Thêm sản phẩm thành công.';
 
     resetForm();
-    loadProducts();
+    await loadProducts();
+    await loadStockReport();
+    await loadStockTransactions();
   } catch (err) {
     alert('Error: ' + err.message);
     console.error(err);
@@ -146,7 +244,9 @@ async function deleteProduct(id) {
     if (!res.ok) throw new Error('Delete failed');
 
     statusElement.textContent = '🗑️ Product deleted successfully.';
-    loadProducts();
+    await loadProducts();
+    await loadStockReport();
+    await loadStockTransactions();
   } catch (err) {
     alert(err.message);
   }
@@ -224,7 +324,9 @@ async function changeStock(id, direction) {
       ? `✅ Đã nhập kho ${amount} sản phẩm.`
       : `✅ Đã bán ${amount} sản phẩm.`;
 
-    loadProducts();
+    await loadProducts();
+    await loadStockReport();
+    await loadStockTransactions();
   } catch (err) {
     alert(err.message);
     console.error(err);
@@ -239,4 +341,7 @@ function filterProductsOnPage() {
   });
 }
 
-loadProducts();
+loadProducts().then(() => {
+  loadStockReport();
+  loadStockTransactions();
+});

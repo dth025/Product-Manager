@@ -147,6 +147,74 @@
 
   </div>
 
+  <div class="card" id="stock-report-card">
+    <h2>Báo cáo tồn kho</h2>
+
+    <div class="stats">
+      <div class="stat-box">
+        <h3>Tổng sản phẩm</h3>
+        <p id="report-total-products">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Tổng số lượng tồn</h3>
+        <p id="report-total-quantity">0</p>
+      </div>
+      <div class="stat-box">
+        <h3>Tổng giá trị tồn</h3>
+        <p id="report-total-value">0₫</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px; padding: 18px;">
+      <h3>Danh sách sản phẩm sắp hết</h3>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Tên</th>
+              <th>SKU</th>
+              <th>Số lượng</th>
+            </tr>
+          </thead>
+          <tbody id="low-stock-list">
+            <tr>
+              <td colspan="3" class="empty">Không có sản phẩm sắp hết.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="transaction-history-card">
+    <h2>Lịch sử giao dịch</h2>
+
+    <div class="search-box">
+      <input type="text" id="transactionSearchInput" placeholder="🔍 Tìm kiếm giao dịch..." />
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Loại</th>
+            <th>Số lượng</th>
+            <th>Trước</th>
+            <th>Sau</th>
+            <th>Ghi chú</th>
+            <th>Thời gian</th>
+          </tr>
+        </thead>
+        <tbody id="transaction-list">
+          <tr>
+            <td colspan="7" class="empty">Loading transactions...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
 <script src="./app.js"></script>

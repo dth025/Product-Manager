@@ -66,13 +66,31 @@ Hệ thống được thiết lập chạy bằng lệnh duy nhất qua Docker C
 
 ## 6. Sửa lỗi & Nâng cấp nổi bật
 - **Visual Separation**: Giao diện UI (`index.html`) đã được tinh chỉnh, tách biệt trực quan "Thông tin chung" và "Thông tin tồn kho" giúp người dùng dễ dàng thao tác mà không làm thay đổi luồng nghiệp vụ API nguyên bản.
-- **Sửa lỗi Redis**: Sửa lỗi cấu hình `legacyMode: true` (không tương thích với Promise/await) của thư viện `redis` ở Product Service, giúp hệ thống không bị treo khi truy vấn danh sách và cập nhật sản phẩm.
+- **Sửa lỗi & Mock Redis**: Sửa lỗi cấu hình `legacyMode: true` của thư viện `redis` ở Product Service. Thêm cơ chế **Tự động Fallback (Mock Redis)**: Nếu Redis không chạy, hệ thống vẫn hoạt động mượt mà bằng bộ nhớ tạm thay vì bị crash.
+- **Tự động hóa Database**: Thêm kịch bản khởi chạy MongoDB ảo trên RAM (`start-db.js`) giúp các lập trình viên có thể chạy dự án ngay lập tức mà không cần cài đặt MongoDB hay Docker.
 
 ---
 
-## 7. Cách chạy dự án
+## 7. Chi tiết Database
+Hệ thống sử dụng **2 Database độc lập** (Kiến trúc Microservices):
+1. **Database `products`** (Dùng cho Product Service):
+   - Bảng `Product`: Quản lý thông tin hàng hóa.
+   - Bảng `StockTransaction`: Quản lý lịch sử xuất/nhập kho.
+2. **Database `auth`** (Dùng cho Auth Service):
+   - Bảng `User`: Quản lý tài khoản đăng nhập (mật khẩu mã hóa).
 
-### Cách 1: Sử dụng Docker Compose (Khuyên dùng - Nhanh nhất)
+---
+
+## 8. Cách chạy dự án
+
+### Cách 1: Chạy Tự động hoàn toàn (Không cần cài đặt Database) - KHUYÊN DÙNG NHẤT
+Yêu cầu: Máy chỉ cần có Node.js.
+1. Mở Terminal tại thư mục gốc, cài đặt thư viện ảo: `npm install mongodb-memory-server dotenv`
+2. Mở Terminal 1 (Thư mục gốc) và chạy để bật DB ảo: `node start-db.js`
+3. Mở Terminal 2 (`cd product-service`): chạy `npm run dev` (sẽ chạy ở `http://localhost:5000`)
+4. Mở Terminal 3 (`cd auth-service`): chạy `npm run dev` (sẽ chạy ở `http://localhost:5001`)
+
+### Cách 2: Sử dụng Docker Compose
 Yêu cầu: Máy đã cài đặt Docker Desktop.
 
 ```bash
@@ -86,23 +104,19 @@ docker compose logs -f
 docker compose down
 ```
 
-### Cách 2: Chạy trực tiếp qua NPM (Development)
-Yêu cầu: Đã tự khởi động MongoDB ở `localhost:27017` và Redis ở `localhost:6379`.
+### Cách 3: Chạy trực tiếp qua NPM với DB thật
+Yêu cầu: Đã tự khởi động MongoDB ở `localhost:27017` và Redis ở `localhost:6379`. (Nếu không có Redis, hệ thống tự bỏ qua cache).
 
 **Bước 1: Chạy Product Service**
-Mở Terminal 1 ở thư mục `Product-Manager/product-service`:
 ```bash
 cd product-service
 npm install
 npm run dev
 ```
-Dịch vụ sẽ chạy ở: `http://localhost:5000`
 
 **Bước 2: Chạy Auth Service**
-Mở Terminal 2 ở thư mục `Product-Manager/auth-service`:
 ```bash
 cd auth-service
 npm install
 npm run dev
 ```
-Dịch vụ sẽ chạy ở: `http://localhost:5001`

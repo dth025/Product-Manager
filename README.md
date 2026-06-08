@@ -2,13 +2,13 @@
 
 ## 1. Tổng quan hệ thống
 
-Đây là một hệ thống backend kết hợp giao diện quản lý được xây dựng theo kiến trúc Microservices với Node.js và Express. Hệ thống bao gồm 2 dịch vụ chính, kết nối với MongoDB và Redis.
+Đây là một hệ thống backend kết hợp giao diện quản lý được xây dựng theo kiến trúc Microservices với Node.js và Express. Hệ thống bao gồm 3 dịch vụ chính, kết nối với MongoDB và Redis.
 
 - **Product Service** (Cổng `5000`): Quản lý sản phẩm, tồn kho và cung cấp giao diện người dùng. Có sử dụng Redis để cache dữ liệu API.
 - **Auth Service** (Cổng `5001`): Dịch vụ xác thực độc lập, xử lý Đăng ký, Đăng nhập và sinh JWT Token.
 - `MongoDB` dùng để lưu trữ dữ liệu. Dữ liệu của Product và Auth được tách biệt hoàn toàn ở 2 database khác nhau (`products` và `auth`).
 - `Redis` dùng để cache kết quả lấy danh sách sản phẩm, tăng hiệu năng.
-- `Docker Compose` dùng để chạy đồng thời cả 4 thành phần: MongoDB, Redis, Product Service, Auth Service.
+- `Docker Compose` dùng để chạy đồng thời cả 5 thành phần: MongoDB, Redis, Product Service, Auth Service, Inventory Service.
 
 ## 2. Mục tiêu chính
 
@@ -21,24 +21,37 @@
 
 ## 3. Cấu trúc thư mục
 
+```text
 Product-Manager/
-├── auth-service/                  # Dịch vụ xác thực
+├── auth-service/
 │   ├── models/
-│   │   └── User.js                # Schema tài khoản
-│   ├── index.js                   # Entrypoint, API Auth
+│   ├── index.js
 │   ├── package.json
 │   └── Dockerfile
-├── product-service/               # Dịch vụ sản phẩm
+│
+├── product-service/
 │   ├── controllers/
 │   ├── models/
-│   ├── public/
 │   ├── routes/
-│   ├── Dockerfile
+│   ├── public/
+│   │   ├── dashboard.html
+│   │   ├── products.html
+│   │   ├── stock-report.html
+│   │   ├── transactions.html
+│   │   ├── css/
+│   │   └── js/
 │   ├── index.js
-│   └── package.json
-├── docker-compose.yml             # Cấu hình chạy toàn bộ hệ thống
+│   ├── package.json
+│   └── Dockerfile
+│
+├── inventory-service/
+│   ├── index.js
+│   ├── package.json
+│   └── Dockerfile
+│
+├── docker-compose.yml
 └── README.md
-
+```
 
 ## 4. Cấu hình Docker (`docker-compose.yml`)
 
@@ -46,7 +59,7 @@ Hệ thống được thiết lập chạy bằng lệnh duy nhất qua Docker C
 - `mongo`: Chạy ở cổng `27017`.
 - `redis`: Chạy ở cổng `6379`.
 - `product-service`: Chạy ở cổng `5000`, mount thư mục hiện tại để tự động reload khi code thay đổi, truy cập DB `products`.
-- `auth-service`: Chạy ở cổng `5001`, mount thư mục `auth-service`, truy cập DB `auth`.
+- `auth-service`: Chạy ở cổng `5001`, mount thư mục `auth-servsice`, truy cập DB `auth`.
 
 ## 5. API chính
 
@@ -63,59 +76,72 @@ Hệ thống được thiết lập chạy bằng lệnh duy nhất qua Docker C
 - `POST /api/auth/register` - Đăng ký tài khoản (Yêu cầu body `{ username, password }`).
 - `POST /api/auth/login` - Đăng nhập (Trả về `token` JWT).
 
+### Inventory Service (Port 5002)
+
+- GET /api/inventory
+- GET /api/inventory/report
+- POST /api/inventory/in
+- POST /api/inventory/out
+
 ## 6. Sửa lỗi & Nâng cấp nổi bật
 - **Visual Separation**: Giao diện UI (`index.html`) đã được tinh chỉnh, tách biệt trực quan "Thông tin chung" và "Thông tin tồn kho" giúp người dùng dễ dàng thao tác mà không làm thay đổi luồng nghiệp vụ API nguyên bản.
-- **Sửa lỗi & Mock Redis**: Sửa lỗi cấu hình `legacyMode: true` của thư viện `redis` ở Product Service. Thêm cơ chế **Tự động Fallback (Mock Redis)**: Nếu Redis không chạy, hệ thống vẫn hoạt động mượt mà bằng bộ nhớ tạm thay vì bị crash.
-- **Tự động hóa Database**: Thêm kịch bản khởi chạy MongoDB ảo trên RAM (`start-db.js`) giúp các lập trình viên có thể chạy dự án ngay lập tức mà không cần cài đặt MongoDB hay Docker.
+- **Sửa lỗi Redis**: Sửa lỗi cấu hình `legacyMode: true` (không tương thích với Promise/await) của thư viện `redis` ở Product Service, giúp hệ thống không bị treo khi truy vấn danh sách và cập nhật sản phẩm.
 
+## Giao diện Web
+
+Dashboard:
+http://localhost:5000/dashboard.html
+
+Quản lý sản phẩm:
+http://localhost:5000/products.html
+
+Báo cáo tồn kho:
+http://localhost:5000/stock-report.html
+
+Lịch sử giao dịch:
+http://localhost:5000/transactions.html
 ---
 
-## 7. Chi tiết Database
-Hệ thống sử dụng **2 Database độc lập** (Kiến trúc Microservices):
-1. **Database `products`** (Dùng cho Product Service):
-   - Bảng `Product`: Quản lý thông tin hàng hóa.
-   - Bảng `StockTransaction`: Quản lý lịch sử xuất/nhập kho.
-2. **Database `auth`** (Dùng cho Auth Service):
-   - Bảng `User`: Quản lý tài khoản đăng nhập (mật khẩu mã hóa).
+## 7. Cách chạy dự án
 
----
+### Cách 1: Sử dụng Docker Compose (Khuyên dùng - Nhanh nhất)
+# Build lần đầu hoặc sau khi thay đổi Dockerfile
+docker compose up -d --build
 
-## 8. Cách chạy dự án
-
-### Cách 1: Chạy Tự động hoàn toàn (Không cần cài đặt Database) - KHUYÊN DÙNG NHẤT
-Yêu cầu: Máy chỉ cần có Node.js.
-1. Mở Terminal tại thư mục gốc, cài đặt thư viện ảo: `npm install mongodb-memory-server dotenv`
-2. Mở Terminal 1 (Thư mục gốc) và chạy để bật DB ảo: `node start-db.js`
-3. Mở Terminal 2 (`cd product-service`): chạy `npm run dev` (sẽ chạy ở `http://localhost:5000`)
-4. Mở Terminal 3 (`cd auth-service`): chạy `npm run dev` (sẽ chạy ở `http://localhost:5001`)
-
-### Cách 2: Sử dụng Docker Compose
-Yêu cầu: Máy đã cài đặt Docker Desktop.
-
-```bash
-# Khởi chạy tất cả các dịch vụ (Database + 2 NodeJS server) dưới nền
+# Khởi động lại hệ thống
 docker compose up -d
 
-# Xem log các service
+# Xem trạng thái container
+docker compose ps
+
+# Xem log
 docker compose logs -f
 
-# Tắt toàn bộ dịch vụ
+# Dừng hệ thống
 docker compose down
-```
 
-### Cách 3: Chạy trực tiếp qua NPM với DB thật
-Yêu cầu: Đã tự khởi động MongoDB ở `localhost:27017` và Redis ở `localhost:6379`. (Nếu không có Redis, hệ thống tự bỏ qua cache).
+### Cách 2: Chạy trực tiếp qua NPM (Development)
+Yêu cầu: Đã tự khởi động MongoDB ở `localhost:27017` và Redis ở `localhost:6379`.
 
 **Bước 1: Chạy Product Service**
+Mở Terminal 1 ở thư mục `Product-Manager/product-service`:
 ```bash
 cd product-service
 npm install
 npm run dev
 ```
+Dịch vụ sẽ chạy ở: `http://localhost:5000`
 
 **Bước 2: Chạy Auth Service**
+Mở Terminal 2 ở thư mục `Product-Manager/auth-service`:
 ```bash
 cd auth-service
 npm install
 npm run dev
 ```
+Dịch vụ sẽ chạy ở: `http://localhost:5001`
+
+Tài khoản mặc định:
+
+Username: admin
+Password: 123456

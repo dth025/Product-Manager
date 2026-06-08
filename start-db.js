@@ -15,32 +15,30 @@ async function startTempDB() {
   console.log(`📍 Kết nối tại: ${uri}`);
   console.log('====================================================\n');
 
-  // Cập nhật product-service/.env
-  const productEnvPath = path.join(__dirname, 'product-service', '.env');
-  if (fs.existsSync(productEnvPath)) {
-    let content = fs.readFileSync(productEnvPath, 'utf8');
-    content = content.replace(/MONGO_URI=.*/g, `MONGO_URI=${uri}products`);
-    fs.writeFileSync(productEnvPath, content);
-    console.log('✅ Đã cập nhật kết nối cho: product-service/.env');
+  function updateEnv(serviceName, dbName) {
+    const envPath = path.join(__dirname, serviceName, '.env');
+    const examplePath = path.join(__dirname, serviceName, '.env.example');
+    let content = '';
+    
+    if (fs.existsSync(envPath)) {
+      content = fs.readFileSync(envPath, 'utf8');
+    } else if (fs.existsSync(examplePath)) {
+      content = fs.readFileSync(examplePath, 'utf8');
+    }
+    
+    if (content.includes('MONGO_URI=')) {
+      content = content.replace(/MONGO_URI=.*/g, `MONGO_URI=${uri}${dbName}`);
+    } else {
+      content += `\nMONGO_URI=${uri}${dbName}\n`;
+    }
+    
+    fs.writeFileSync(envPath, content.trim() + '\n');
+    console.log(`✅ Đã cập nhật kết nối cho: ${serviceName}/.env`);
   }
 
-  // Cập nhật auth-service/.env
-  const authEnvPath = path.join(__dirname, 'auth-service', '.env');
-  if (fs.existsSync(authEnvPath)) {
-    let content = fs.readFileSync(authEnvPath, 'utf8');
-    content = content.replace(/MONGO_URI=.*/g, `MONGO_URI=${uri}auth`);
-    fs.writeFileSync(authEnvPath, content);
-    console.log('✅ Đã cập nhật kết nối cho: auth-service/.env');
-  }
-
-  // Cập nhật inventory-service/.env
-  const inventoryEnvPath = path.join(__dirname, 'inventory-service', '.env');
-  if (fs.existsSync(inventoryEnvPath)) {
-    let content = fs.readFileSync(inventoryEnvPath, 'utf8');
-    content = content.replace(/MONGO_URI=.*/g, `MONGO_URI=${uri}inventory`);
-    fs.writeFileSync(inventoryEnvPath, content);
-    console.log('✅ Đã cập nhật kết nối cho: inventory-service/.env');
-  }
+  updateEnv('product-service', 'products');
+  updateEnv('auth-service', 'auth');
+  updateEnv('inventory-service', 'inventory');
 
 
   console.log('\n⚠️ QUAN TRỌNG:');

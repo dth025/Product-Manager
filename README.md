@@ -13,6 +13,7 @@
 
 - Quản lý sản phẩm với các thao tác CRUD: tạo, đọc, cập nhật, xoá.
 - Hỗ trợ tìm kiếm và lọc sản phẩm.
+- Hỗ trợ nhập kho và bán hàng trực tiếp từ giao diện quản lý.
 - Cung cấp cache cho API lấy tất cả sản phẩm để giảm tải MongoDB.
 - Chạy được trong môi trường container hoá.
 
@@ -81,9 +82,12 @@ product-service/
   - `DELETE /api/products/:id` – xoá sản phẩm.
 - Route này chuyển yêu cầu đến `productController`.
 
-### 3.5 `public/index.html`
+### 3.5 `public/`
 
-- Thư mục chứa tài nguyên tĩnh nếu muốn triển khai UI đơn giản.
+- Thư mục chứa tài nguyên tĩnh cho UI quản lý sản phẩm.
+- `public/index.html` là trang dashboard chính.
+- `public/styles.css` chứa toàn bộ CSS cho giao diện.
+- `public/app.js` chứa logic CRUD, tìm kiếm và tính năng nhập kho / bán hàng.
 - `index.js` cấu hình `express.static()` để phục vụ nội dung trong `public/`.
 
 ## 4. Cấu hình Docker

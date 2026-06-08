@@ -6,7 +6,8 @@
 
 - **Product Service** (Cổng `5000`): Quản lý sản phẩm, tồn kho và cung cấp giao diện người dùng. Có sử dụng Redis để cache dữ liệu API.
 - **Auth Service** (Cổng `5001`): Dịch vụ xác thực độc lập, xử lý Đăng ký, Đăng nhập và sinh JWT Token.
-- `MongoDB` dùng để lưu trữ dữ liệu. Dữ liệu của Product và Auth được tách biệt hoàn toàn ở 2 database khác nhau (`products` và `auth`).
+- **Inventory Service (Cổng 5002): Quản lý báo cáo tồn kho, lịch sử nhập/xuất kho và các nghiệp vụ liên quan đến kho hàng.
+- Dữ liệu được lưu trữ trên MongoDB và được phân tách theo từng service (products, auth và inventory nếu được cấu hình riêng).
 - `Redis` dùng để cache kết quả lấy danh sách sản phẩm, tăng hiệu năng.
 - `Docker Compose` dùng để chạy đồng thời cả 5 thành phần: MongoDB, Redis, Product Service, Auth Service, Inventory Service.
 
@@ -59,7 +60,7 @@ Hệ thống được thiết lập chạy bằng lệnh duy nhất qua Docker C
 - `mongo`: Chạy ở cổng `27017`.
 - `redis`: Chạy ở cổng `6379`.
 - `product-service`: Chạy ở cổng `5000`, mount thư mục hiện tại để tự động reload khi code thay đổi, truy cập DB `products`.
-- `auth-service`: Chạy ở cổng `5001`, mount thư mục `auth-servsice`, truy cập DB `auth`.
+- `auth-service`: Chạy ở cổng `5001`, mount thư mục `auth-service`, truy cập DB `auth`.
 
 ## 5. API chính
 
@@ -78,10 +79,6 @@ Hệ thống được thiết lập chạy bằng lệnh duy nhất qua Docker C
 
 ### Inventory Service (Port 5002)
 
-- GET /api/inventory
-- GET /api/inventory/report
-- POST /api/inventory/in
-- POST /api/inventory/out
 
 ## 6. Sửa lỗi & Nâng cấp nổi bật
 - **Visual Separation**: Giao diện UI (`index.html`) đã được tinh chỉnh, tách biệt trực quan "Thông tin chung" và "Thông tin tồn kho" giúp người dùng dễ dàng thao tác mà không làm thay đổi luồng nghiệp vụ API nguyên bản.
@@ -104,7 +101,9 @@ http://localhost:5000/transactions.html
 
 ## 7. Cách chạy dự án
 
-### Cách 1: Sử dụng Docker Compose (Khuyên dùng - Nhanh nhất)
+### Cách 1: Sử dụng Docker Compose
+
+```bash
 # Build lần đầu hoặc sau khi thay đổi Dockerfile
 docker compose up -d --build
 
@@ -119,6 +118,7 @@ docker compose logs -f
 
 # Dừng hệ thống
 docker compose down
+```
 
 ### Cách 2: Chạy trực tiếp qua NPM (Development)
 Yêu cầu: Đã tự khởi động MongoDB ở `localhost:27017` và Redis ở `localhost:6379`.

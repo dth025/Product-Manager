@@ -26,7 +26,20 @@ app.get('/', (req, res) => {
   res.send('Welcome to Product Service API');
 });
 
-const redisClient = redis.createClient({ url: REDIS_URL });
+const mockRedisClient = {
+  connect: async () => { console.log('Mock Redis connected'); },
+  get: async () => null,
+  set: async () => null,
+  keys: async () => [],
+  del: async () => null,
+};
+
+let redisClient;
+if (REDIS_URL === 'mock') {
+  redisClient = mockRedisClient;
+} else {
+  redisClient = redis.createClient({ url: REDIS_URL });
+}
 
 const connectMongo = mongoose.connect(MONGO_URI)
   .then(() => console.log('MongoDB connected'))
@@ -41,8 +54,8 @@ const connectRedis = redisClient.connect()
     app.set('redisClient', redisClient);
   })
   .catch(err => {
-    console.error('Redis error:', err);
-    process.exit(1);
+    console.error('Redis error:', err.message, '- Falling back to mock Redis');
+    app.set('redisClient', mockRedisClient);
   });
 
 Promise.all([connectMongo, connectRedis])

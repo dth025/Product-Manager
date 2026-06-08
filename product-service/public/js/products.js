@@ -27,7 +27,6 @@ async function loadProducts() {
       const stockClass = (p.quantity || 0) > 10 ? 'in-stock' : (p.quantity || 0) > 0 ? 'low-stock' : 'out-stock';
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td><img src="${p.imageUrl || 'https://via.placeholder.com/70'}" alt="${p.name || 'Sản phẩm'}"></td>
         <td style="font-weight:600;">${p.name || '-'}</td>
         <td>${p.sku || '-'}</td>
         <td>${formatDate(p.entryDate)}</td>
@@ -50,80 +49,65 @@ async function loadProducts() {
 async function submitProductForm(event) {
   event.preventDefault();
 
-  // Kiểm tra các input tồn tại trước
   const nameInput = document.getElementById('name');
   const skuInput = document.getElementById('sku');
   const entryDateInput = document.getElementById('entryDate');
   const costPriceInput = document.getElementById('costPrice');
   const priceInput = document.getElementById('price');
   const quantityInput = document.getElementById('quantity');
-  const imageInput = document.getElementById('image');
 
   if (!nameInput || !skuInput || !entryDateInput || !costPriceInput || !priceInput || !quantityInput) {
     alert('Lỗi: Một số trường input không tìm thấy trong trang.');
     return;
   }
 
-  // Tạo object data
   const data = {
     name: nameInput.value.trim(),
     sku: skuInput.value.trim(),
     entryDate: entryDateInput.value,
-    costPrice: costPriceInput.value,
-    price: priceInput.value,
-    quantity: quantityInput.value,
+    costPrice: Number(costPriceInput.value),
+    price: Number(priceInput.value),
+    quantity: Number(quantityInput.value),
   };
 
   try {
-    // Nếu có ảnh, gửi FormData + params; không thì gửi JSON
-    const hasImage = imageInput && imageInput.files && imageInput.files[0];
-    
+    const url = editingProductId
+      ? `/api/products/${editingProductId}`
+      : '/api/products';
+
     const method = editingProductId ? 'PUT' : 'POST';
-    let url = editingProductId ? `/api/products/${editingProductId}` : '/api/products';
-    
-    let res;
-    
-    if (hasImage) {
-      // Gửi FormData với ảnh + text fields qua URL params
-      const params = new URLSearchParams(data);
-      url += `?${params.toString()}`;
-      
-      const formData = new FormData();
-      formData.append('image', imageInput.files[0]);
-      
-      console.log('Sending FormData with image and URL params:', { url, hasImage: true });
-      
-      res = await fetch(url, {
-        method,
-        body: formData,
-      });
-    } else {
-      // Gửi JSON mà không ảnh
-      console.log('Sending JSON data');
-      
-      res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-    }
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
 
     const responseData = await res.json();
-    
+
     if (!res.ok) {
-      throw new Error(responseData.error || responseData.message || 'Đã có lỗi xảy ra.');
+      throw new Error(
+        responseData.error ||
+        responseData.message ||
+        'Đã có lỗi xảy ra.'
+      );
     }
 
-    statusElement.textContent = editingProductId ? '✅ Cập nhật sản phẩm thành công.' : '✅ Thêm sản phẩm thành công.';
+    statusElement.textContent = editingProductId
+      ? '✅ Cập nhật sản phẩm thành công.'
+      : '✅ Thêm sản phẩm thành công.';
+
     resetForm();
     await loadProducts();
+
   } catch (err) {
     statusElement.textContent = '';
     alert(err.message);
     console.error(err);
   }
 }
-
 async function startEditProduct(id) {
   try {
     const res = await fetch(`/api/products/${id}`);
@@ -143,7 +127,6 @@ async function startEditProduct(id) {
     document.getElementById('costPrice').value = product.costPrice || '';
     document.getElementById('price').value = product.price || '';
     document.getElementById('quantity').value = product.quantity || 0;
-    document.getElementById('image').value = '';
     document.getElementById('submit-btn').textContent = 'Cập nhật sản phẩm';
     document.getElementById('cancel-btn').style.display = 'inline-flex';
   } catch (err) {

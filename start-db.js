@@ -50,7 +50,7 @@ async function startTempDB() {
   
   console.log('\n🚀 Đang khởi động các dịch vụ (Product, Auth, Inventory)...');
   const npx = /^win/.test(process.platform) ? 'npx.cmd' : 'npx';
-  spawn(npx, ['-y', 'concurrently', '\"npm run start-product\"', '\"npm run start-auth\"', '\"npm run start-inventory\"'], { stdio: 'inherit' });
+  spawn(npx, ['-y', 'concurrently', '\"npm run start-product\"', '\"npm run start-auth\"', '\"npm run start-inventory\"'], { stdio: 'inherit', shell: true });
 
   // Keep process alive
   process.on('SIGINT', async () => {
